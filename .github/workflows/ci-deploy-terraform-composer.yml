@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - "infra-as-code-terraform/composer/**"
-      - .github\workflows\ci-deploy-terraform-composer.yml
+      - .github/workflows/ci-deploy-terraform-composer.yml
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
