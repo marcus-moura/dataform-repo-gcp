@@ -7,7 +7,7 @@ on:
       - main
     paths:
       - "composer/**"
-      
+      - .github\workflows\ci-deploy-composer-dags.yml
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
   
@@ -27,7 +27,7 @@ jobs:
         name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v2'
         with:
-          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEYD }}
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
       # Configura o Cloud SDK
       - name: Set up Cloud SDK

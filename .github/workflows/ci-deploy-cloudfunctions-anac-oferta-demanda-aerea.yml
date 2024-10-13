@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "cloudfunctions/src/cf_extract_anac_oferta_demanda_aerea_to_bronze/**"
+      - ".github\workflows\ci-deploy-cloudfunctions-anac-oferta-demanda-aerea.yml"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
