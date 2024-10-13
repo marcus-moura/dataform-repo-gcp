@@ -1,0 +1,40 @@
+name: Composer DAGs CI/CD Deploy
+
+on:
+  # Triggers the workflow on push or pull request events but only for the "develop" branch
+  push:
+    branches:
+      - main
+    paths:
+      - "composer/**"
+      
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+  
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      # Clone the repository
+      - name: 'Checkout code'
+        uses: actions/checkout@v4
+
+      # Performs authentication on Google Cloud with a json credential allocated in secret github
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEYD }}
+
+      # Configura o Cloud SDK
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+      
+      # Runs command gsutil for syns dags
+      - name: Deploy dags to Cloud Storage
+        run: |
+          cd composer
+          gsutil -m rsync -d -r -x "__pycache__" ./dags gs://bkt-tcc-composer/dags

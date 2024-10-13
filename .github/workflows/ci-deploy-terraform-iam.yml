@@ -1,0 +1,53 @@
+name: Terraform Iam CI/CD
+
+on:
+  # Triggers the workflow on push or pull request events but only for the elop" branch
+  push:
+    branches: 
+      - main
+    paths:
+      - "infra-as-code-terraform/iam/**"
+      
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "infra-as-code-terraform/iam"
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      # Clone the repository
+      - name: 'Checkout code'
+        uses: actions/checkout@v4
+
+      # Performs authentication on Google Cloud with a json credential allocated in secret github
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.2  # Defina a versão do Terraform conforme necessário
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+      
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan

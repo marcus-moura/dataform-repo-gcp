@@ -1,0 +1,26 @@
+extract:
+  url: https://www.gov.br/anac/pt-br/assuntos/dados-e-estatisticas/dados-estatisticos/dados-estatisticos
+  source: anac
+  subdir_name: "oferta_demanda_aerea"
+
+bigquery:
+  dataset_id: tcc_bronze
+  table_id: anac_oferta_demanda_aerea
+  write_disposition: WRITE_APPEND
+  time_partitioning: year
+  partition_field: ano_particao
+  description: |
+    Tabela para armazenar dados extraídos da ANAC sobre dados estatísticos de oferta e demanda aérea.
+
+    Os dados foram extraídos da página:
+      https://www.gov.br/anac/pt-br/assuntos/dados-e-estatisticas/dados-estatisticos/dados-estatisticos
+
+    A descrição das colunas podem ser encontradas no link:
+      https://www.gov.br/anac/pt-br/assuntos/dados-e-estatisticas/mercado-do-transporte-aereo/demanda-e-oferta/descricao-das-variaveis
+    
+  labels:
+    fonte: anac
+    sistema: anac
+    carga: incremental
+    frequencia: mensal
+    workload: cf_extract_anac_oferta_demanda_aerea_to_bronze

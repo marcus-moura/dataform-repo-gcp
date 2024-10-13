@@ -1,0 +1,5 @@
+config {
+  type: "declaration",
+  schema: "tcc_bronze",
+  name: "anac_oferta_demanda_aerea",
+}
