@@ -13,8 +13,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main
-
     steps:
       - name: Set up Cloud SDK for Prod
         uses: 'google-github-actions/auth@v2'
