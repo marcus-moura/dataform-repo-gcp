@@ -1,5 +1,5 @@
 defaultProject: data-architecture-tcc
-defaultLocation: US
+defaultLocation: us-east4
 defaultDataset: dataform
 defaultAssertionDataset: dataform_assertions
 dataformCoreVersion: 3.0.0
