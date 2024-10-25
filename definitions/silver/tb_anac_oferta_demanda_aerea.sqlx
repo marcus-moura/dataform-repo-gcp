@@ -22,6 +22,13 @@ pre_operations {
 }
 
 SELECT DISTINCT
+  SHA256(
+    CONCAT(ANO, MES, EMPRESA_SIGLA_, EMPRESA_NACIONALIDADE_, 
+          AEROPORTO_DE_ORIGEM_SIGLA_, AEROPORTO_DE_ORIGEM_PAIS_, 
+          AEROPORTO_DE_ORIGEM_NOME_, AEROPORTO_DE_DESTINO_SIGLA_, 
+          AEROPORTO_DE_DESTINO_PAIS_, NATUREZA, GRUPO_DE_VOO
+          )
+  )                                                     AS hash_key,
   DATE(CAST(ANO AS INT64), CAST(MES AS INT64), 01)      AS data_registro,
   EMPRESA_SIGLA_                                        AS empresa_sigla,
   EMPRESA_NOME_                                         AS empresa_nome,
@@ -58,7 +65,10 @@ SELECT DISTINCT
   ano_particao
 FROM
   ${ref("tcc_bronze","anac_oferta_demanda_aerea")}
+WHERE
+  AEROPORTO_DE_ORIGEM_SIGLA_ != "N/I"
 ${when(incremental(), 
-`WHERE ano_particao = ano_particao_checkpoint
-  AND
- DATE(CAST(ANO AS INT64), mes, 01) > (SELECT MAX(data_registro) FROM ${self()})`)}
+`AND ano_particao = ano_particao_checkpoint
+ AND DATE(CAST(ANO AS INT64), CAST(MES AS INT64), 01) > (SELECT MAX(data_registro) FROM ${self()})`)}
+
+
