@@ -1,0 +1,33 @@
+config {
+  type: "table",
+  schema: "tcc_gold",
+  description: "Tabela com dados sobre o resumo do setor de transporte aéreo em termos de demanda e oferta."
+}
+
+SELECT
+    data_registro,
+    empresa_sigla,
+    empresa_nome,
+    aeroporto_origem_nome,
+    aeroporto_origem_sigla,
+    aeroporto_origem_uf,
+    aeroporto_origem_pais,
+    aeroporto_destino_nome,
+    aeroporto_destino_sigla,
+    aeroporto_destino_uf,
+    aeroporto_destino_pais,
+    natureza_voo,
+    SUM(passageiros_pagos) AS total_passageiros_pagos,
+    SUM(passageiros_gratis) AS total_passageiros_gratis,
+    SUM(passageiros_pagos + passageiros_gratis) AS total_passageiros,
+    SUM(assentos) AS assentos,
+    SUM(capacidade_total_aeronave_kg) AS capacidade_total_aeronave_kg
+FROM 
+    ${ref("tcc_silver","tb_anac_oferta_demanda_aerea")}
+WHERE
+    passageiros_pagos IS NOT NULL
+    AND passageiros_pagos > 0
+GROUP BY 
+    all
+ORDER BY 
+    total_passageiros DESC
