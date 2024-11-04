@@ -1,0 +1,43 @@
+config {
+  type: "table",
+  schema: "tcc_gold",
+  description: "Tabela com dados sobre o resumo do setor de transporte aéreo em termos de demanda e oferta."
+}
+
+SELECT
+  nr_voo,
+  nr_etapa AS nr_trecho,
+  dt_voo,
+  sigla_empresa,	
+  nm_empresa,
+  nm_pais_origem,
+  nm_municipio_origem,
+  uf_origem,
+  sigla_aeroporto_origem,
+  nm_pais_destino,
+  nm_municipio_destino,
+  uf_destino,
+  sigla_aeroporto_destino,
+  natureza_voo,
+  grupo_voo,
+  ds_tipo_servico AS tipo_servico,
+  SUM(nr_assentos_ofertados) AS assentos_ofertados,
+  SUM(nr_passag_pagos) AS passageiros_pagos,
+  SUM(nr_passag_gratis) AS passageiros_gratis,
+  SUM(nr_passag_gratis + nr_passag_pagos) AS total_passageiros,
+  ROUND(SAFE_DIVIDE(SUM(nr_passag_pagos + nr_passag_gratis), SUM(nr_assentos_ofertados)), 2) AS taxa_ocupacao_assentos,
+  SUM(nr_rpk) AS rpk,
+  ROUND(SUM(nr_horas_voadas), 2) AS horas_voadas,
+  SUM(nr_decolagem) AS decolagens,
+  SUM(lt_combustivel) AS combustivel_usado_kg,
+  SUM(kg_payload) AS payload_kg,
+  SUM(nr_distancia_km) AS distancia_total_km,
+  SUM(kg_correio) AS carga_correios_kg,
+  SUM(kg_bagagem_livre) AS bagagem_livre_kg,	
+  SUM(kg_bagagem_excesso) AS bagagem_excesso_kg,	
+  SUM(kg_carga_paga) AS carga_paga_kg,	
+  SUM(kg_carga_gratis) AS carga_gratis_kg
+FROM
+  ${ref("tcc_silver","tb_anac_oferta_demanda_aerea_basica")}
+GROUP BY
+  ALL
