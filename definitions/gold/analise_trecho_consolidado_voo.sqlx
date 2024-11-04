@@ -1,0 +1,86 @@
+config {
+  type: "table",
+  schema: "tcc_gold",
+  description: "Tabela com dados sobre o resumo do setor de transporte aéreo em termos de demanda e oferta."
+}
+
+WITH rank_origem_destino AS (
+  SELECT
+    id_etapa_basica,
+    dt_voo,
+    nr_voo,
+    nr_etapa,
+    sigla_empresa,	
+    nm_empresa,
+    nm_pais_origem,
+    sigla_aeroporto_origem,
+    sigla_aeroporto_destino,
+    nm_aeroporto_origem,
+    nm_municipio_origem,
+    nm_pais_destino,
+    nm_aeroporto_destino,
+    nm_municipio_destino,
+    natureza_voo,
+    grupo_voo,
+    ds_tipo_servico AS tipo_servico,
+    dt_partida_real,
+    dt_chegada_real,
+    nr_assentos_ofertados,
+    nr_passag_pagos,
+    nr_passag_gratis,
+    nr_pax_gratis_km,
+    nr_rpk,
+    nr_horas_voadas,
+    nr_decolagem,
+    nr_velocidade_media,
+    lt_combustivel,
+    kg_payload,
+    nr_distancia_km,
+    kg_correio,
+    kg_bagagem_livre,
+    kg_bagagem_excesso,
+    kg_carga_paga,
+    kg_carga_gratis,
+    ROW_NUMBER() OVER(PARTITION BY nr_voo, dt_voo, id_empresa ORDER BY nr_etapa) AS ordem_origem,
+    ROW_NUMBER() OVER(PARTITION BY nr_voo, dt_voo, id_empresa ORDER BY nr_etapa DESC) AS ordem_destino
+  FROM 
+    ${ref("tcc_silver","tb_anac_oferta_demanda_aerea_basica")}
+)
+SELECT
+  nr_voo,
+  dt_voo,
+  sigla_empresa,	
+  nm_empresa,
+  MIN(CASE WHEN ordem_origem = 1 THEN nm_pais_origem END) AS nm_pais_origem,
+  MIN(CASE WHEN ordem_origem = 1 THEN sigla_aeroporto_origem END) AS sigla_aeroporto_origem,
+  MIN(CASE WHEN ordem_origem = 1 THEN nm_aeroporto_origem END) AS nm_aeroporto_origem,
+  MIN(CASE WHEN ordem_origem = 1 THEN nm_municipio_origem END) AS nm_municipio_origem,
+  MIN(CASE WHEN ordem_destino = 1 THEN nm_pais_destino END) AS nm_pais_destino,
+  MIN(CASE WHEN ordem_destino = 1 THEN sigla_aeroporto_destino END) AS sigla_aeroporto_destino,
+  MIN(CASE WHEN ordem_destino = 1 THEN nm_aeroporto_destino END) AS nm_aeroporto_destino,
+  MIN(CASE WHEN ordem_destino = 1 THEN nm_municipio_destino END) AS nm_municipio_destino,
+  natureza_voo,
+  grupo_voo,
+  tipo_servico,
+  SUM(nr_assentos_ofertados) AS assentos_ofertados,
+  SUM(nr_passag_pagos) AS passageiros_pagos,
+  SUM(nr_passag_gratis) AS passageiros_gratis,
+  SUM(nr_passag_gratis + nr_passag_pagos) AS total_passageiros,
+  SUM(nr_pax_gratis_km) AS total_pax_gratis_km,
+  ROUND(SAFE_DIVIDE(SUM(nr_passag_pagos + nr_passag_gratis), SUM(nr_assentos_ofertados)), 2) AS taxa_ocupacao_assentos,
+  SUM(nr_rpk) AS total_rpk,
+  ROUND(SUM(nr_horas_voadas), 2) AS total_horas_voadas,
+  SUM(nr_decolagem) AS total_decolagem,
+  SUM(nr_velocidade_media) AS total_velocidade_media,
+  SUM(lt_combustivel) AS total_combustivel_usado,
+  SUM(kg_payload) AS total_payload,
+  SUM(nr_distancia_km) AS distancia_total_km,
+  SUM(kg_correio) AS total_carga_correios_kg,
+  SUM(kg_bagagem_livre) AS total_bagagem_livre_kg,	
+  SUM(kg_bagagem_excesso) AS total_bagagem_excesso_kg,	
+  SUM(kg_carga_paga) AS total_carga_paga_kg,
+  SUM(kg_carga_gratis) AS total_carga_gratis_kg
+FROM
+  rank_origem_destino
+GROUP BY 
+  ALL
