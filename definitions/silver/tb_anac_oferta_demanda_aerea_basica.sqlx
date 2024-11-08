@@ -2,7 +2,7 @@ config {
   type: "incremental",
   schema: "tcc_silver",
   description: "Tabela com dados tratados sobre o resumo do setor de transporte aéreo em termos de demanda e oferta.",
-  tags: ["silver","anac","oferta_demanda_aerea"],
+  tags: ["silver","anac","oferta_demanda_aerea_basica"],
   uniqueKey: ["id_etapa_basica"],
   bigquery: {
     labels: {
@@ -26,27 +26,17 @@ SELECT DISTINCT
   CAST(id_basica AS INT64)                                                                AS id_etapa_basica,
   CAST(id_empresa AS INT64)                                                               AS id_empresa,
   CAST(nr_voo AS INT64)                                                                   AS nr_voo,
-  nr_singular                                                                             AS nr_singular_voo,
   sg_empresa_icao                                                                         AS sigla_empresa,
-  sg_empresa_iata                                                                         AS iata_empresa,
   nm_empresa,
   nm_pais                                                                                 AS nm_pais_origem_empresa,
   ds_tipo_empresa                                                                         AS tipo_empresa,
-  CAST(id_di AS INT64)                                                                    AS id_tipo_autorizacao_etapa,
-  cd_di                                                                                   AS cd_tipo_autorizacao_etapa,
   ds_di                                                                                   AS ds_etapa,
   ds_grupo_di                                                                             AS grupo_voo,
   DATE(dt_referencia)                                                                     AS dt_voo,
   DATE(nr_ano_mes_referencia)                                                             AS ano_mes_voo,
   PARSE_DATETIME('%Y-%m-%d %H:%M:%S', CONCAT(dt_partida_real, ' ', hr_partida_real))      AS dt_partida_real,
   PARSE_DATETIME('%Y-%m-%d %H:%M:%S', CONCAT(dt_chegada_real, ' ', hr_chegada_real))      AS dt_chegada_real,
-  CAST(id_tipo_linha AS INT64)                                                            AS id_linha,
   CAST(REPLACE(nr_linha, ".0","") AS INT64)                                               AS nr_linha,
-  IF(
-    cd_tipo_linha = "X", 
-    NULL, 
-    cd_tipo_linha
-    )                                                                                     AS cd_linha,
   IF(
       UPPER(ds_natureza_tipo_linha) IN ("NÃO IDENTIFICADA", "NÃO IDENTIFICADO"), 
       ds_natureza_etapa, 
@@ -67,28 +57,18 @@ SELECT DISTINCT
     NULL, 
     ds_natureza_etapa
     )                                                                                     AS natureza_etapa,
-  CAST(id_aerodromo_origem AS INT64)                                                      AS id_aeroporto_origem,
   sg_icao_origem                                                                          AS sigla_aeroporto_origem,
-  sg_iata_origem                                                                          AS iata_aeroporto_origem,
   nm_aerodromo_origem                                                                     AS nm_aeroporto_origem,
   nm_municipio_origem,
   sg_uf_origem                                                                            AS uf_origem,
-  nm_regiao_origem,
   nm_pais_origem,
-  id_aerodromo_destino                                                                    AS id_aeroporto_destino,
   sg_icao_destino                                                                         AS sigla_aeroporto_destino,
-  sg_iata_destino                                                                         AS iata_aeroporto_destino,
   nm_aerodromo_destino                                                                    AS nm_aeroporto_destino,
   nm_municipio_destino,
   sg_uf_destino                                                                           AS uf_destino,
-  nm_regiao_destino,
   nm_pais_destino,
   CAST(nr_etapa AS INT64)                                                                 AS nr_etapa,
   CAST(nr_escala_destino AS INT64)                                                        AS nr_escala_destino,
-  CAST(id_equipamento AS INT64)                                                           AS id_aeronave,
-  sg_equipamento_icao                                                                     AS sigla_aeronave,
-  ds_modelo                                                                               AS ds_modelo_aeronave,
-  ds_matricula,
   CAST(REPLACE(nr_passag_pagos, ".0","") AS INT64)                                        AS nr_passag_pagos,
   CAST(REPLACE(nr_passag_gratis, ".0","") AS INT64)                                       AS nr_passag_gratis,
   CAST(nr_assentos_ofertados AS INT64)                                                    AS nr_assentos_ofertados,
@@ -119,8 +99,7 @@ SELECT DISTINCT
 FROM
   ${ref("tcc_bronze","anac_oferta_demanda_aerea_basica")}
 ${when(incremental(), 
-`WHERE 
-  nr_ano_mes_referencia = particao_checkpoint
+ `WHERE nr_ano_mes_referencia = particao_checkpoint
   AND DATE(dt_referencia) >= (SELECT MAX(dt_voo) FROM ${self()})`)}
 
 

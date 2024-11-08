@@ -1,7 +1,8 @@
 config {
   type: "table",
   schema: "tcc_gold",
-  description: "Tabela com dados sobre o resumo do setor de transporte aéreo em termos de demanda e oferta."
+  description: "Tabela com dados sobre o resumo do setor de transporte aéreo em termos de demanda e oferta.",
+  tags: ["gold","anac","oferta_demanda_aerea_basica"],
 }
 
 SELECT
