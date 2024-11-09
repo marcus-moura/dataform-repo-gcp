@@ -1,7 +1,8 @@
 config {
   type: "table",
   schema: "tcc_gold",
-  description: "Tabela com dados sobre o resumo do setor de transporte aéreo em termos de demanda e oferta."
+  description: "Tabela com dados sobre o resumo do setor de transporte aéreo em termos de demanda e oferta.",
+  tags: ["gold","anac","oferta_demanda_aerea_basica"],
 }
 
 SELECT
@@ -10,6 +11,8 @@ SELECT
   dt_voo,
   sigla_empresa,	
   nm_empresa,
+  DENSE_RANK() OVER (ORDER BY nm_municipio_origem,nm_municipio_destino) AS id_origem_destino,
+  CONCAT(nm_municipio_origem, " ", IFNULL(uf_origem, ""), " --> ", nm_municipio_destino, " ", IFNULL(uf_destino, "")) AS origem_destino,
   nm_pais_origem,
   nm_municipio_origem,
   uf_origem,
