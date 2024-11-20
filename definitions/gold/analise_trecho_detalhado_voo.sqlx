@@ -1,8 +1,25 @@
 config {
-  type: "table",
+  type: "incremental",
   schema: "tcc_gold",
-  description: "Tabela com dados sobre o resumo do setor de transporte aéreo em termos de demanda e oferta.",
+  description: "Tabela com dados sobre demanda e oferta aere de forma detalhada por cada trecho.",
   tags: ["gold","anac","oferta_demanda_aerea_basica"],
+  uniqueKey: ["nr_voo","dt_voo","nr_trecho","sigla_empresa"],
+  bigquery: {
+    labels: {
+      frequencia: "mensal",
+      carga: "incremental"
+    },
+    partitionBy: "DATE_TRUNC(dt_voo, MONTH)",
+    clusterBy: ["nr_voo","sigla_empresa","nr_trecho"]
+  },
+}
+
+pre_operations {
+  DECLARE particao_checkpoint DEFAULT (
+    ${when(incremental(),
+    `SELECT max(dt_voo) FROM ${self()}`,
+    `SELECT DATE("1999-01-01")`)}
+  )
 }
 
 SELECT
@@ -42,5 +59,6 @@ SELECT
   SUM(kg_carga_gratis) AS carga_gratis_kg
 FROM
   ${ref("tcc_silver","tb_anac_oferta_demanda_aerea_basica")}
+  ${when(incremental(), `WHERE dt_voo >= particao_checkpoint`)}
 GROUP BY
   ALL

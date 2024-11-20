@@ -1,13 +1,29 @@
 config {
-  type: "table",
+  type: "incremental",
   schema: "tcc_gold",
-  description: "Tabela com dados sobre o resumo do setor de transporte aéreo em termos de demanda e oferta.",
+  description: "Tabela com dados de demanda e oferta aerea com os trechos consolidados em cada voo.",
   tags: ["gold","anac","oferta_demanda_aerea_basica"],
+  uniqueKey: ["nr_voo","dt_voo","sigla_empresa"],	
+  bigquery: {
+    labels: {
+      frequencia: "mensal",
+      carga: "incremental"
+    },
+    partitionBy: "DATE_TRUNC(dt_voo, MONTH)",
+    clusterBy: ["nr_voo","sigla_empresa"]
+  },
+}
+
+pre_operations {
+  DECLARE particao_checkpoint DEFAULT (
+    ${when(incremental(),
+    `SELECT max(dt_voo) FROM ${self()}`,
+    `SELECT DATE("1999-01-01")`)}
+  )
 }
 
 WITH rank_origem_destino AS (
   SELECT
-    id_etapa_basica,
     dt_voo,
     nr_voo,
     nr_etapa,
@@ -46,6 +62,7 @@ WITH rank_origem_destino AS (
     ROW_NUMBER() OVER(PARTITION BY nr_voo, dt_voo, id_empresa ORDER BY nr_etapa DESC) AS ordem_destino
   FROM 
     ${ref("tcc_silver","tb_anac_oferta_demanda_aerea_basica")}
+  ${when(incremental(), `WHERE dt_voo >= particao_checkpoint`)}
 )
 SELECT
   nr_voo,

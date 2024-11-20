@@ -1,0 +1,23 @@
+config {
+  type: "table",
+  schema: "tcc_silver",
+  description: "Tabela de feriados nacionais",
+  tags: ["silver","anbima","feriados_nacionais"],
+  bigquery: {
+    labels: {
+      frequencia: "unica",
+      carga: "full"
+    },
+  }
+}
+
+SELECT
+    PARSE_DATE("%m/%d/%Y",string_field_0) AS data,
+    string_field_1 AS dia_semana,
+    string_field_2 AS feriado
+FROM
+    ${ref("tcc_bronze","anbima_feriados_nacionais")}
+WHERE 
+ 1=1
+ AND string_field_2 IS NOT NULL
+ AND PARSE_DATE("%m/%d/%Y",string_field_0) BETWEEN "2019-01-01" AND "2024-12-31"
