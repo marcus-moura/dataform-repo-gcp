@@ -58,8 +58,8 @@ WITH rank_origem_destino AS (
     kg_bagagem_excesso,
     kg_carga_paga,
     kg_carga_gratis,
-    ROW_NUMBER() OVER(PARTITION BY nr_voo, dt_voo, id_empresa ORDER BY nr_etapa) AS ordem_origem,
-    ROW_NUMBER() OVER(PARTITION BY nr_voo, dt_voo, id_empresa ORDER BY nr_etapa DESC) AS ordem_destino
+    ROW_NUMBER() OVER(PARTITION BY nr_voo, dt_voo, id_empresa ORDER BY nr_etapa, dt_partida_real) AS ordem_origem,
+    ROW_NUMBER() OVER(PARTITION BY nr_voo, dt_voo, id_empresa ORDER BY nr_etapa DESC, dt_partida_real DESC) AS ordem_destino
   FROM 
     ${ref("tcc_silver","tb_anac_oferta_demanda_aerea_basica")}
   ${when(incremental(), `WHERE dt_voo >= particao_checkpoint`)}
@@ -78,7 +78,6 @@ SELECT
   MIN(CASE WHEN ordem_destino = 1 THEN nm_aeroporto_destino END) AS nm_aeroporto_destino,
   MIN(CASE WHEN ordem_destino = 1 THEN nm_municipio_destino END) AS nm_municipio_destino,
   natureza_voo,
-  grupo_voo,
   tipo_servico,
   SUM(nr_assentos_ofertados) AS assentos_ofertados,
   SUM(nr_passag_pagos) AS passageiros_pagos,

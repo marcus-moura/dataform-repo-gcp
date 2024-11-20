@@ -3,7 +3,7 @@ config {
   schema: "tcc_gold",
   description: "Tabela com dados sobre demanda e oferta aere de forma detalhada por cada trecho.",
   tags: ["gold","anac","oferta_demanda_aerea_basica"],
-  uniqueKey: ["nr_voo","dt_voo","nr_trecho","sigla_empresa"],
+  uniqueKey: ["nr_voo","dt_voo","nr_trecho","sigla_empresa", "id_origem_destino"],
   bigquery: {
     labels: {
       frequencia: "mensal",
